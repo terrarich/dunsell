@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DunSell — Руководство по игре и редактору</title>
+    <style>
+      :root{
+        --bg: #0f1220;
+        --panel: #15192e;
+        --accent: #58a6ff;
+        --accent-2: #ffd45a;
+        --text: #e6edf3;
+        --muted: #9aa4b2;
+        --ok: #6ee7a8;
+        --warn: #fbbf24;
+        --bad: #f87171;
+        --code: #0b1022;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: ui-sans-serif, system-ui, Segoe UI, Roboto, Ubuntu, Cantarell, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
+      a { color: var(--accent); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      header { padding: 32px 20px 12px; background: linear-gradient(180deg, #0f172a 0, #0f1220 100%); border-bottom: 1px solid #1f2746; position: fixed; top: 0; left: 0; right: 0; z-index: 10; transform: translateY(-100%); transition: transform .28s ease; backdrop-filter: blur(6px); }
+      header.show { transform: translateY(0); }
+      .hotzone { position: fixed; top: 0; left: 0; right: 0; height: 10px; z-index: 11; }
+      .wrap { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+      h1 { margin: 0 0 6px; font-size: 34px; letter-spacing: .3px; display: inline-block; }
+      .splash { display: inline-block; margin-left: 10px; transform: rotate(-12deg); background: #2a2100; color: var(--accent-2); padding: 4px 10px; border-radius: 999px; border: 1px solid #3c3100; font-weight: 700; font-size: 13px; }
+      h2 { margin: 28px 0 12px; font-size: 22px; }
+      h3 { margin: 20px 0 8px; font-size: 18px; color: var(--accent); }
+      p { line-height: 1.6; color: var(--text); }
+      .muted { color: var(--muted); }
+      .chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 0; }
+      .chip { background: #17203b; color: var(--accent); border: 1px solid #26345a; padding: 6px 10px; border-radius: 999px; font-size: 13px; }
+      nav.quick { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 18px 0 6px; }
+      nav.quick a { display: block; padding: 12px 14px; border-radius: 10px; background: var(--panel); border: 1px solid #212a4a; transition: transform .15s ease, background .15s ease; }
+      nav.quick a:hover { background: #1a2040; transform: translateY(-2px); }
+      nav.quick a.active { outline: 2px solid var(--accent); }
+      .panel { background: var(--panel); border: 1px solid #212a4a; border-radius: 12px; padding: 16px; }
+      .two { display: grid; grid-template-columns: 1.1fr .9fr; gap: 18px; }
+      .kbd { display: inline-block; padding: 2px 6px; border: 1px solid #36446f; background: #121830; border-bottom-width: 3px; border-radius: 6px; font-size: 13px; min-width: 22px; text-align: center; }
+      code, pre { background: var(--code); border: 1px solid #1e2c55; border-radius: 8px; }
+      code { padding: 2px 6px; }
+      pre { padding: 14px; overflow: auto; }
+      ul { line-height: 1.7; }
+      .callout { border-left: 4px solid var(--accent); padding: 10px 12px; background: #0c142e; border-radius: 8px; }
+      .ok { border-left-color: var(--ok); background: #0d1f18; }
+      .warn { border-left-color: var(--warn); background: #291f12; }
+      .bad { border-left-color: var(--bad); background: #2a1316; }
+      .grid { display: grid; gap: 12px; }
+      .shortcut { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 8px 12px; background: #131a33; border: 1px solid #223058; border-radius: 10px; }
+      .hr { height: 1px; background: #20294a; margin: 16px 0; }
+      footer { padding: 24px 0 40px; color: var(--muted); }
+      .topbtn { position: fixed; right: 18px; bottom: 18px; width: 46px; height: 46px; border-radius: 50%; background: #132042; color: var(--text); border: 1px solid #25325c; display: grid; place-items: center; cursor: pointer; opacity: 0; transform: translateY(12px); transition: opacity .2s, transform .2s; z-index: 9; }
+      .topbtn.show { opacity: .95; transform: translateY(0); }
+      .toolbar { display: flex; gap: 10px; align-items: center; }
+      .btn { background: #17203b; color: var(--text); border: 1px solid #2b3b66; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+      .btn:hover { background: #1f2a4d; }
+      .theme-toggle { margin-left: auto; }
+      body.light { --bg: #f7fafc; --panel: #ffffff; --accent: #2563eb; --accent-2: #b45309; --text: #0f172a; --muted: #475569; --ok: #15803d; --warn: #b45309; --bad: #b91c1c; --code: #f1f5f9; }
+      @media (max-width: 880px) { .two { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <div class="hotzone"></div>
+    <header id="site-header">
+      <div class="wrap">
+        <div class="toolbar">
+          <h1>DunSell — руководство</h1>
+          <span class="splash" id="splash"></span>
+          <button class="btn theme-toggle" id="themeBtn" title="Сменить тему">Тема</button>
+        </div>
+        <div class="chips">
+          <span class="chip">Pygame</span>
+          <span class="chip">Single-player</span>
+          <span class="chip">Roguelite</span>
+          <span class="chip">Map Editor</span>
+        </div>
+        <nav class="quick" aria-label="Быстрые ссылки">
+          <a href="#start">Быстрый старт</a>
+          <a href="#menu">Меню и режимы</a>
+          <a href="#controls">Управление</a>
+          <a href="#gameplay">Игровая логика</a>
+          <a href="#maps">Мои карты</a>
+          <a href="#editor">Редактор карт</a>
+          <a href="#shortcuts">Шорткаты</a>
+          <a href="#faq">FAQ</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="wrap" style="padding-top: 120px;">
+      <section id="start" class="panel">
+        <h2>Быстрый старт</h2>
+        <div class="two">
+          <div>
+            <h3>Запуск игры</h3>
+            <pre><code>python main.py</code></pre>
+            <ul>
+              <li>На экране меню выберите параметры и нажмите <span class="kbd">Enter</span>.</li>
+              <li>Цель — накопить нужное количество золота и найти открывшийся выход.</li>
+              <li>Магазин у старта — ваша безопасная зона.</li>
+            </ul>
+            <div class="callout ok">
+              Магазин — безопасно: враги не видят вас, не наносят урон, можно продать инвентарь по <span class="kbd">E</span>.
+            </div>
+          </div>
+          <div>
+            <h3>Запуск редактора</h3>
+            <ul>
+              <li>Откройте игру и в меню выберите «РЕДАКТОР КАРТ».</li>
+              <li>Или из терминала: <code>python main.py</code> → «РЕДАКТОР КАРТ».</li>
+              <li>Сверху — прокручиваемая панель инструментов, снизу — рабочая область.</li>
+            </ul>
+            <div class="callout">
+              Панель прокручивается колесом мыши над панелью или с зажатым <strong>Shift</strong> где угодно.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="menu" class="panel">
+        <h2>Меню и режимы</h2>
+        <ul>
+          <li><strong>Размер подземелья</strong>: пресеты масштаба карты.</li>
+          <li><strong>Сложность</strong>: влияет на скорость/численность врагов и параметры игрока.</li>
+          <li><strong>Плотность сокровищ</strong>: сколько лута спавнится.</li>
+          <li><strong>НАЧАТЬ ИГРУ</strong>: старт новой сессии.</li>
+          <li><strong>МОИ КАРТЫ</strong>: список файлов в папке <code>maps/</code> (имя до <code>.json</code> — название карты).</li>
+          <li><strong>РЕДАКТОР КАРТ</strong>: встроенный редактор с сохранениями.</li>
+        </ul>
+      </section>
+
+      <section id="controls" class="panel">
+        <h2>Управление (игра)</h2>
+        <div class="grid">
+          <div class="shortcut"><span>Движение</span><span><span class="kbd">W</span> <span class="kbd">A</span> <span class="kbd">S</span> <span class="kbd">D</span></span></div>
+          <div class="shortcut"><span>Выстрел в курсор</span><span><span class="kbd">ЛКМ</span> / <span class="kbd">Space</span></span></div>
+          <div class="shortcut"><span>Рывок</span><span><span class="kbd">Shift</span></span></div>
+          <div class="shortcut"><span>Продать в магазине</span><span><span class="kbd">E</span></span></div>
+          <div class="shortcut"><span>Миникарта</span><span><span class="kbd">Tab</span></span></div>
+          <div class="shortcut"><span>Справка</span><span><span class="kbd">F1</span></span></div>
+          <div class="shortcut"><span>Заново (после смерти/победы)</span><span><span class="kbd">R</span></span></div>
+          <div class="shortcut"><span>Меню (после смерти/победы)</span><span><span class="kbd">M</span></span></div>
+          <div class="shortcut"><span>Выход</span><span><span class="kbd">Esc</span></span></div>
+        </div>
+      </section>
+
+      <section id="gameplay" class="panel">
+        <h2>Игровая логика</h2>
+        <h3>Сокровища и цель</h3>
+        <ul>
+          <li>Собирайте сокровища, продавайте их в магазине (<span class="kbd">E</span>).</li>
+          <li>Когда накопите целевую сумму — выход откроется и загорится зелёным.</li>
+        </ul>
+        <h3>Враги</h3>
+        <ul>
+          <li><strong>Chaser</strong>: преследует, бьёт при контакте.
+          <li><strong>Spitter</strong>: плюётся снарядами.</li>
+          <li>В магазине враги вас не видят и не наносят урон.</li>
+          <li>Враги не спавнятся в одной точке и пытаются «разойтись», чтобы не слипаться.</li>
+        </ul>
+        <div class="callout warn">Контактный урон: при касании с врагом вы теряете HP и слегка отталкиваетесь.</div>
+      </section>
+
+      <section id="maps" class="panel">
+        <h2>Мои карты</h2>
+        <p>Это список всех <code>.json</code> в <code>maps/</code>. Навигация стрелками, <span class="kbd">Enter</span> — запустить выбранную карту.</p>
+        <div class="callout">Название карты — это имя файла до <code>.json</code>.</div>
+      </section>
+
+      <section id="editor" class="panel">
+        <h2>Редактор карт</h2>
+        <h3>Панель инструментов</h3>
+        <ul>
+          <li><strong>Стены / Пол</strong> — рисование тайлов по сетке (ЛКМ — поставить, ПКМ — стереть/заменить).</li>
+          <li><strong>Сокровище / Враг</strong> — добавить объект; ещё раз ЛКМ по объекту в режиме «Перемещение» — тащить.</li>
+          <li><strong>Выход / Спавн</strong> — поставить/переместить выход (2×2) и точку спавна игрока.</li>
+          <li><strong>Перемещение</strong> — режим перетаскивания объектов (в этом режиме рисование отключено).</li>
+          <li><strong>Открыть</strong> — выбрать файл из <code>maps/</code> и начать редактирование (имя запоминается).</li>
+          <li><strong>Новая</strong> — пустая карта (имя сбрасывается).</li>
+          <li><strong>Сохранить</strong> — если файл открыт, сохраняет в него; иначе попросит имя. Всегда спросит «Цель золота».</li>
+          <li><strong>Сохранить как…</strong> — доступно по <span class="kbd">F12</span>.</li>
+        </ul>
+        <div class="callout">Панель прокручивается колесом мыши над панелью или с зажатым <span class="kbd">Shift</span>.</div>
+
+        <h3>Камера и зум</h3>
+        <ul>
+          <li>Панорамирование: средняя кнопка мыши (зажать и тянуть) или стрелки.</li>
+          <li>Зум: колесо мыши к курсору, <span class="kbd">PgUp</span>/<span class="kbd">PgDn</span>.</li>
+        </ul>
+
+        <h3>Сохранение</h3>
+        <ul>
+          <li><span class="kbd">Ctrl</span>+<span class="kbd">S</span> — быстрое сохранение.</li>
+          <li><span class="kbd">F12</span> — «Сохранить как…».</li>
+          <li>При попытке выйти с несохранёнными изменениями редактор спросит, как поступить.</li>
+          <li>При сохранении укажите «Цель золота» — значение попадёт в файл и будет использовано в игре.</li>
+        </ul>
+
+        <h3>Горячие советы</h3>
+        <ul>
+          <li>Делайте стартовую комнату просторной, магазин расположен рядом со спавном.</li>
+          <li>Выход лучше размещать далеко от старта — будет драйв.</li>
+          <li>Не злоупотребляйте врагами у узких проходов — оставьте игроку пространство для манёвра.</li>
+        </ul>
+      </section>
+
+      <section id="shortcuts" class="panel">
+        <h2>Шорткаты (сводка)</h2>
+        <div class="grid">
+          <div class="shortcut"><span>Сохранить (редактор)</span><span><span class="kbd">Ctrl</span>+<span class="kbd">S</span></span></div>
+          <div class="shortcut"><span>Сохранить как… (редактор)</span><span><span class="kbd">F12</span></span></div>
+          <div class="shortcut"><span>Панорама камеры</span><span><span class="kbd">MMB</span> / стрелки</span></div>
+          <div class="shortcut"><span>Зум</span><span>Колесо / <span class="kbd">PgUp</span> / <span class="kbd">PgDn</span></span></div>
+          <div class="shortcut"><span>Прокрутка панели</span><span>Колесо над панелью / <span class="kbd">Shift</span>+Колесо</span></div>
+          <div class="shortcut"><span>Выход из редактора</span><span><span class="kbd">Esc</span> (с запросом сохранения)</span></div>
+        </div>
+      </section>
+
+      <section id="faq" class="panel">
+        <h2>FAQ</h2>
+        <h3>Игра запускается, но окно редактора не видно.</h3>
+        <p>Запускайте через главное меню «РЕДАКТОР КАРТ». Если окно позади — используйте Alt+Tab. В терминале не заходите в интерактивный Python (строка с <code>&gt;&gt;&gt;</code>), запускайте как обычную программу.</p>
+        <h3>Сохранил карту, но её нет в «МОИ КАРТЫ».</h3>
+        <p>Проверьте, что файл лежит в <code>maps/</code> и имеет расширение <code>.json</code>. Название в списке — это имя файла без расширения.</p>
+        <h3>Враги «липнут» друг к другу.</h3>
+        <p>Мы ограничили спавн и добавили раздвигание врагов на апдейте. Если карта кастомная и враги стоят рядом, сдвиньте их в редакторе в режиме «Перемещение».</p>
+      </section>
+
+      <div class="hr"></div>
+      <footer>
+        Сделано на Pygame. Привет от сообщества: <a href="https://www.pygame.org/contribute.html" target="_blank" rel="noreferrer noopener">pygame.org</a> · Удачи в подземельях!
+      </footer>
+    </main>
+    <button class="topbtn" id="toTop" aria-label="Наверх">▲</button>
+
+    <script>
+      (function(){
+        const header = document.getElementById('site-header');
+        const hotzone = document.querySelector('.hotzone');
+        let lastY = window.scrollY, hideTimer = null;
+        const showHeader = ()=>{ header.classList.add('show'); if(hideTimer){ clearTimeout(hideTimer);} hideTimer = setTimeout(()=>header.classList.remove('show'), 1200); };
+        const forceShow = ()=>{ header.classList.add('show'); if(hideTimer){ clearTimeout(hideTimer);} };
+        const maybeHideOnScroll = ()=>{
+          const y = window.scrollY;
+          if(y > 140 && y > lastY + 4){ header.classList.remove('show'); } else if(y < lastY - 8){ header.classList.add('show'); }
+          lastY = y;
+        };
+        // Hotzone hover
+        hotzone.addEventListener('mouseenter', forceShow);
+        header.addEventListener('mouseenter', forceShow);
+        header.addEventListener('mouseleave', ()=>{ if(window.scrollY > 40) header.classList.remove('show'); });
+        window.addEventListener('mousemove', (e)=>{ if(e.clientY < 12) forceShow(); });
+        window.addEventListener('scroll', maybeHideOnScroll, { passive: true });
+        // Start visible at top
+        header.classList.add('show');
+
+        // Theme toggle
+        const themeBtn = document.getElementById('themeBtn');
+        const applyTheme = (t)=>{ document.body.classList.toggle('light', t === 'light'); localStorage.setItem('theme', t); };
+        const saved = localStorage.getItem('theme') || 'dark';
+        applyTheme(saved);
+        themeBtn.addEventListener('click', ()=>{ const next = document.body.classList.contains('light') ? 'dark' : 'light'; applyTheme(next); });
+
+        // Rotating splash
+        const splash = document.getElementById('splash');
+        const splashes = [
+          'Попробуйте Minecraft', 'Попробуйте Terraria', 'Создано Terrarich`ем', '99% багов бесплатно!', 'С Сахором', 'Убей время', 'Спидран по DunSell', 'Technoblade never die', 'Рик роллит!'
+        ];
+        const rotateSplash = ()=>{ splash.textContent = splashes[Math.floor(Math.random()*splashes.length)]; };
+        rotateSplash(); setInterval(rotateSplash, 4000);
+
+        // Scrollspy
+        const links = Array.from(document.querySelectorAll('nav.quick a'));
+        const targets = links.map(a=> document.querySelector(a.getAttribute('href'))).filter(Boolean);
+        const spy = ()=>{
+          let idx = 0; const y = window.scrollY + 160;
+          for(let i=0;i<targets.length;i++){ if(targets[i].offsetTop <= y) idx = i; }
+          links.forEach((a,i)=> a.classList.toggle('active', i===idx));
+        };
+        window.addEventListener('scroll', spy, { passive: true }); spy();
+
+        // Copy buttons for code blocks
+        document.querySelectorAll('pre').forEach(pre=>{
+          const btn = document.createElement('button');
+          btn.textContent = 'Копировать';
+          btn.className = 'btn';
+          btn.style.position='absolute'; btn.style.margin='8px';
+          const wrap = document.createElement('div');
+          wrap.style.position='relative';
+          pre.parentNode.insertBefore(wrap, pre); wrap.appendChild(pre); wrap.appendChild(btn);
+          btn.addEventListener('click', ()=>{
+            navigator.clipboard.writeText(pre.innerText.trim());
+            btn.textContent = 'Скопировано!'; setTimeout(()=>btn.textContent='Копировать', 1200);
+          });
+        });
+
+        // Back to top
+        const toTop = document.getElementById('toTop');
+        const topo = ()=>{ toTop.classList.toggle('show', window.scrollY > 300); };
+        window.addEventListener('scroll', topo, { passive: true }); topo();
+        toTop.addEventListener('click', ()=> window.scrollTo({ top: 0, behavior: 'smooth' }));
+      })();
+    </script>
+  </body>
+  </html>
+
+
